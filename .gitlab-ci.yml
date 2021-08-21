@@ -11,7 +11,7 @@ run:
   artifacts:
     paths:
       - fakeresults.xml
-    expire_in: 1200
+    expire_in: 14 mins
 
 xsd:
   stage: validate
