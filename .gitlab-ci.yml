@@ -17,6 +17,7 @@ xsd:
   stage: validate
   image: ubuntu
   before_script:
+    - apt update
     - apt install -y --no-install-recommends libxml2-utils
   script:
     - xmllint --noout --schema junit-10.xsd fakeresults.xml
