@@ -1,13 +1,22 @@
-default:
-  image: golang
+stages:
+  - test
+  - validate
 
-compile:
-  stage: build
+run:
+  stage: test
+  image: golang
   script:
     - go build
-
-unit-test:
-  stage: test
-  script:
     - go test
+  artifacts:
+    paths:
+      - fakeresults.xml
+    expire_in: 1200
 
+xsd:
+  stage: validate
+  image: ubuntu
+  before_script:
+    - apt install xmlstarlet
+  script:
+    - xmlstarlet val -e -s junit-10.xsd fakeresults.xml

@@ -3,6 +3,7 @@ package junitxml
 import (
 	"bytes"
 	"encoding/xml"
+	"os"
 	"regexp"
 	"testing"
 )
@@ -13,7 +14,7 @@ func TestJunitOutput(t *testing.T) {
 	enc.Encode(FakeTestSuites())
 	output := buf.Bytes()
 
-	t.Log(string(output))
+	os.WriteFile("fakeresults.xml", output, 0666) // to validate later
 
 	reTop := regexp.MustCompile(`(?s)^<testsuites\W.*</testsuites>$`)
 	reSuites := regexp.MustCompile(`(?s)<testsuite .*?</testsuite>`)
