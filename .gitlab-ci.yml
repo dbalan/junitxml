@@ -17,6 +17,7 @@ xsd:
   stage: validate
   image: ubuntu
   before_script:
-    - apt install xmlstarlet
+    - apt update
+    - apt install -y --no-install-recommends xmlstarlet
   script:
     - xmlstarlet val -e -s junit-10.xsd fakeresults.xml
