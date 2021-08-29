@@ -1,6 +1,24 @@
+/*
+   Copyright 2021 Marty Pauley
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package junitxml
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"io"
+)
 
 type JUnitXML struct {
 	XMLName xml.Name     `xml:"testsuites"`
@@ -25,6 +43,10 @@ func (j *JUnitXML) Suite(name string) *TestSuite {
 	return ts
 }
 
+func (j *JUnitXML) WriteXML(h io.Writer) error {
+	return xml.NewEncoder(h).Encode(j)
+}
+
 func (ts *TestSuite) Case(name string) *TestSuite {
 	ts.TestCount++
 	tc := &TestCase{Name: name}
@@ -32,20 +54,21 @@ func (ts *TestSuite) Case(name string) *TestSuite {
 	return ts
 }
 
-func (ts *TestSuite) Fail(msg string) {
-	ts.FailureCount++
+func (ts *TestSuite) lastCase() *TestCase {
 	if len(ts.Cases) == 0 {
 		ts.Case("unknown")
 	}
-	curt := ts.Cases[len(ts.Cases)-1]
-	curt.Failures = append(curt.Failures, msg)
+	return ts.Cases[len(ts.Cases)-1]
 }
 
-func (ts *TestSuite) Abort(msg string) {
+func (ts *TestSuite) Fail(f string) {
+	ts.FailureCount++ // yes, there can be more failures than test cases
+	curt := ts.lastCase()
+	curt.Failures = append(curt.Failures, f)
+}
+
+func (ts *TestSuite) Abort(e error) {
 	ts.ErrorCount++
-	if len(ts.Cases) == 0 {
-		ts.Case("unknown")
-	}
-	curt := ts.Cases[len(ts.Cases)-1]
-	curt.Error = msg
+	curt := ts.lastCase()
+	curt.Error = e.Error()
 }

@@ -2,7 +2,7 @@ package junitxml
 
 import (
 	"bytes"
-	"encoding/xml"
+	"errors"
 	"os"
 	"regexp"
 	"testing"
@@ -10,11 +10,10 @@ import (
 
 func TestJunitOutput(t *testing.T) {
 	var buf bytes.Buffer
-	enc := xml.NewEncoder(&buf)
-	enc.Encode(FakeTestSuites())
+	FakeTestSuites().WriteXML(&buf)
 	output := buf.Bytes()
 
-	os.WriteFile("fakeresults.xml", output, 0666) // to validate later
+	os.WriteFile("fakeresults.xml", output, 0644) // to validate later
 
 	reTop := regexp.MustCompile(`(?s)^<testsuites\W.*</testsuites>$`)
 	reSuites := regexp.MustCompile(`(?s)<testsuite .*?</testsuite>`)
@@ -41,8 +40,10 @@ func FakeTestSuites() *JUnitXML {
 	good.Case("gamma")
 	mixed := ju.Suite("mixed")
 	mixed.Case("good")
-	mixed.Case("bad").Fail("failed")
-	mixed.Case("ugly").Abort("buggy")
-	ju.Suite("fast").Fail("too soon")
+	bad := mixed.Case("bad")
+	bad.Fail("once")
+	bad.Fail("twice")
+	mixed.Case("ugly").Abort(errors.New("buggy"))
+	ju.Suite("fast").Fail("fail early")
 	return ju
 }
