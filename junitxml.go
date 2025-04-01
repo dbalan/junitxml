@@ -102,3 +102,7 @@ func (ts *TestSuite) Skip(msg string) {
 	curt.SkipMessage = &Message{msg}
 	curt.Time = "0.0"
 }
+
+func (ts *TestSuite) Success(tme string) {
+	ts.lastCase().Time = tme
+}
