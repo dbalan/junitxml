@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"testing"
+	"time"
 )
 
 func TestJunitOutput(t *testing.T) {
@@ -33,6 +34,9 @@ func TestJunitOutput(t *testing.T) {
 }
 
 func FakeTestSuites() *JUnitXML {
+	var (
+		testDuration = time.Nanosecond * 10
+	)
 	ju := &JUnitXML{}
 	good := ju.Suite("all good")
 	good.Case("alpha")
@@ -40,12 +44,12 @@ func FakeTestSuites() *JUnitXML {
 	good.Case("gamma")
 	mixed := ju.Suite("mixed")
 	success := mixed.Case("success")
-	success.Success("0.2000")
+	success.Success(testDuration)
 	bad := mixed.Case("bad")
-	bad.Fail("once", "0.01000")
-	bad.Fail("twice", "0.01000")
-	mixed.Case("ugly").Abort(errors.New("buggy"), "0.1000")
-	ju.Suite("fast").Fail("fail early", "0.0")
+	bad.Fail("once", testDuration)
+	bad.Fail("twice", testDuration)
+	mixed.Case("ugly").Abort(errors.New("buggy"), testDuration)
+	ju.Suite("fast").Fail("fail early", time.Duration(0))
 	skipped := mixed.Case("skipped")
 	skipped.Skip("skipped")
 

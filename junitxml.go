@@ -17,6 +17,7 @@ package junitxml
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"time"
 )
@@ -83,26 +84,30 @@ func (ts *TestSuite) lastCase() *TestCase {
 	return ts.Cases[len(ts.Cases)-1]
 }
 
-func (ts *TestSuite) Fail(msg, tme string) {
+func (tc *TestCase) setDuration(d time.Duration) {
+	tc.Time = fmt.Sprintf("%f", d.Seconds())
+}
+
+func (ts *TestSuite) Fail(msg string, dur time.Duration) {
 	ts.FailureCount++ // yes, there can be more failures than test cases
 	curt := ts.lastCase()
 	curt.Failures = append(curt.Failures, &Message{msg})
-	curt.Time = tme
+	curt.setDuration(dur)
 }
 
-func (ts *TestSuite) Abort(e error, tme string) {
+func (ts *TestSuite) Abort(e error, dur time.Duration) {
 	ts.ErrorCount++
 	curt := ts.lastCase()
 	curt.Error = &Message{e.Error()}
-	curt.Time = tme
+	curt.setDuration(dur)
 }
 
 func (ts *TestSuite) Skip(msg string) {
 	curt := ts.lastCase()
 	curt.SkipMessage = &Message{msg}
-	curt.Time = "0.0"
+	curt.setDuration(time.Duration(0))
 }
 
-func (ts *TestSuite) Success(tme string) {
-	ts.lastCase().Time = tme
+func (ts *TestSuite) Success(dur time.Duration) {
+	ts.lastCase().setDuration(dur)
 }
